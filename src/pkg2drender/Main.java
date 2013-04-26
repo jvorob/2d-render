@@ -1,4 +1,5 @@
 /*
+ * 
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -94,19 +95,10 @@ public class Main implements TimerListener, MouseEventListener {
         i = points.iterator();
         while(i.hasNext())
         {
-            Vector2 n = Vector2.vecSubt(i.next(),pos);
-            float angle = Angles.fixAngle(heading - Angles.getAngle(n));
-            if(angle < 3.14159 / 2 || angle > 3.14159 * 3 / 2)
-            {
-                float x = -1 * (float)Math.tan(angle);
-                if (Math.abs(x) <= fov)
-                {
-                    x/=fov;
-                    int h = sview.c.getHeight();
-                    int w = sview.c.getWidth();
-                    g.drawLine((int)((x * w) + w)/2, 0, (int)((x * w) + w)/2, h);
-                }
-            }
+            float x = mapPoint(i.next(), pos, heading);
+            int h = sview.c.getHeight();
+            int w = sview.c.getWidth();
+            g.drawLine((int)((x * w) + w)/2, 0, (int)((x * w) + w)/2, h);
         }
         sview.flushBuffer();
     }
@@ -119,6 +111,23 @@ public class Main implements TimerListener, MouseEventListener {
         }
         return false;
     }
+    
+    public float mapPoint(Vector2 point, Vector2 viewPos, float viewHeading)
+    {
+        Vector2 n = Vector2.vecSubt(point,viewPos);
+            float angle = Angles.fixAngle(viewHeading - Angles.getAngle(n));
+            if(angle < 3.14159 / 2 || angle > 3.14159 * 3 / 2)
+            {
+                float x = -1 * (float)Math.tan(angle);
+                if (Math.abs(x) <= fov)
+                {
+                    x/=fov;
+                    return x;
+                }
+            }
+        return -2;//If point is not in view
+    }
+    
     @Override
     public boolean mouseMoved(int oldX, int oldY, int x, int y, boolean left, boolean right) {return false;}
 }
