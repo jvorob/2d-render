@@ -59,7 +59,6 @@ public class Main implements TimerListener, MouseEventListener {
     
     public void timerEvent()
     {
-        screen.clear();
         Vector2 m = Vector2.fromPoint(mouse.get());
         //heading = Angles.getAngle(Vector2.vecSubt(m, pos));
         if(keys.getKey(KeyEvent.VK_Q))
@@ -100,11 +99,23 @@ public class Main implements TimerListener, MouseEventListener {
                     x + (int)(200 *Math.cos( heading - fovangle )),
                     y + (int)(200* Math.sin( heading - fovangle ))
                     );
+            if(lines.size() == 1)
+            {
+                Line line = lines.get(0);
+                float angle1 = relAngle(line.end1, pos, heading);
+                float angle2 = relAngle(line.end2, pos, heading);
+                //Misc.prln(String.valueOf(angle1) + ' ' + String.valueOf(angle2));
+                float diff = Angles.fixAngle(angle1 - angle2);
+                if(diff > 3.1415)
+                    diff -= 2 * 3.1415;
+                float avgangle = Angles.fixAngle(diff / 2+ angle2);
+                drawRay(avgangle + heading, 300);
+            }
         }
         screen.flushBuffer();
+        screen.clear();
         
         //Rendering code |
-        sview.clear();
         g = sview.buffer.getGraphics();
         g.setColor(Color.red);
         i = lines.iterator();
@@ -118,6 +129,7 @@ public class Main implements TimerListener, MouseEventListener {
             g.fillRect((int)((a * w) + w)/2, 0, (int)Math.abs(((b * w) + w)/2 - ((a * w) + w)/2), h);
         }
         sview.flushBuffer();
+        sview.clear();
     }
 
     @Override
@@ -147,31 +159,41 @@ public class Main implements TimerListener, MouseEventListener {
         //Case: Entirely within fov, all good
         if(Math.abs(a) < 2 && Math.abs(b) < 2)
         {
-            Misc.prln("good!");
+            Misc.prln("inside");
             return line;
         }
         
-        //Case: Entirely outside fov
-        if(true)
+        //Case: Both outside fov on opposite sides
+        if(Math.abs(a) == 2 && Math.abs(b) == 2 && a / b == -1)
         {
-            ...
+            //...
             float angle1 = relAngle(line.end1, viewPos, viewHeading);
+            float angle2 = relAngle(line.end2, viewPos, viewHeading);
+            float diff = Angles.fixAngle(angle1 - angle2);
+            if(diff > 3.1415)
+                diff -= 2 * 3.1415;
+            float avgangle = Angles.fixAngle(diff / 2+ angle2);
+            if(avgangle < 3.1415 / 2 || avgangle > Angles.fixAngle((float)(-3.1415 / 2)))
+            {
+                Misc.prln("infront but fully outside");
+                return null;
+            }
         }
-        Misc.prln("bad :(");
+        Misc.prln("other");
         return null;
     }
     
     public float relAngle(Vector2 point, Vector2 viewPos, float viewHeading)
     {
         Vector2 n = Vector2.vecSubt(point,viewPos);
-        return Angles.fixAngle(viewHeading - Angles.getAngle(n));
+        return Angles.fixAngle(Angles.getAngle(n) - viewHeading);
     }
     public float mapPoint(Vector2 point, Vector2 viewPos, float viewHeading)
     {
         float angle = relAngle(point, viewPos, viewHeading);
         if(angle < 3.14159 / 2 || angle > 3.14159 * 3 / 2)
         {
-            float x = -1 * (float)Math.tan(angle);
+            float x = (float)Math.tan(angle);
             if (Math.abs(x) <= fov)
             {
                 x/=fov;
@@ -179,6 +201,17 @@ public class Main implements TimerListener, MouseEventListener {
             }
         }
         return angle < 3.14159?-2:2;//If point is not in view
+    }
+    
+    public void drawRay(float angle, int l)//draws a ray of length l from the player 
+            //                              at the specifided angle relative TO +X
+    {
+        Graphics g = screen.buffer.getGraphics();
+        g.setColor(Color.red);
+        g.drawLine((int)pos.x,(int)pos.y,
+                    (int)pos.x + (int)(l * Math.cos(angle)),
+                    (int)pos.y + (int)(l * Math.sin(angle))
+                    );
     }
     
     @Override
