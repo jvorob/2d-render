@@ -17,7 +17,7 @@ public class Angles {
         if(rely == 0)
         {
             if(relx == 0)
-                System.out.println("Divide by zero in getAngle");
+                System.out.println("Segment has length 0,0");
             else if(relx > 0)
                 return (float)0;
             else
@@ -62,5 +62,10 @@ public class Angles {
     public static float getDist(float relx, float rely)
     {
         return (float)Math.sqrt(relx * relx + rely * rely);
+    }
+    
+    public static float abs(float angle)//returns the 'absolute value' of an angle
+    {
+        return Angles.fixAngle(angle>pi?pi + pi-angle:angle);
     }
 }

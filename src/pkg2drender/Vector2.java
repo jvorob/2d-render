@@ -20,7 +20,7 @@ public class Vector2 {
    
     public void flipy(float h)//flips vector to reference from top of box h high
     {
-        y = h  - y;
+        y = h - y;
     }
     
     public float length()
@@ -71,6 +71,10 @@ public class Vector2 {
         return temp;
     }
 
+    public static Vector2 inverse(Vector2 v)
+    {
+        return new Vector2(v.x * -1, v.y * -1);
+    }
     public void vecMult(float coEffish)
     {
         x *= coEffish;
@@ -122,11 +126,23 @@ public class Vector2 {
         vecMult(factor);
     }
     
+    public static Vector2 fromAngle(float ang, float len)//creates a new v2 with the specified angle in radians ccw from +x
+    {
+        Vector2 temp = new Vector2(0, len);
+        temp.setAngle(ang);
+        return temp;
+    }
+    
     public void setAngle(float a)//Sets heading ccw from +x in radians
     {
         float d = length();
         x = d * (float)Math.cos(a);
         y = d * (float)Math.sin(a);
+    }
+    
+    public void rotate(float a)
+    {
+        setAngle(Angles.getAngle(this) + a);
     }
     
     public Vector2 normal()
